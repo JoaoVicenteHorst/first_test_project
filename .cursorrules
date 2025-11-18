@@ -1,0 +1,50 @@
+# Project: CRUD Admin Panel with Prisma Backend
+
+## Tech Stack
+- Frontend: React 18, Vite 5
+- Backend: Node.js, Express.js
+- Database: Prisma ORM with PostgreSQL/SQLite
+- Styling: Pure CSS3
+
+## Project Structure
+- `/src` - React frontend code
+- `/server` - Express.js backend
+- `/prisma` - Database schema and migrations
+- `/src/api` - Frontend API client
+
+## Development Guidelines
+
+### Backend
+- All API routes in `server/index.js`
+- Use Prisma Client for database operations
+- Follow RESTful conventions
+- Handle errors gracefully with try-catch
+- Return appropriate HTTP status codes
+
+### Frontend
+- Use functional components with hooks
+- API calls through `src/api/users.js`
+- Show loading states during API calls
+- Display user-friendly error messages
+- Use async/await for API calls
+
+### Database
+- Prisma schema in `prisma/schema.prisma`
+- Run migrations after schema changes: `npm run prisma:migrate`
+- Always generate Prisma Client after schema changes
+- Use seed file for initial data
+
+### Code Style
+- Use ES6+ features
+- Async/await over promises
+- Destructuring where appropriate
+- Clear, descriptive variable names
+- Comments for complex logic
+
+## Common Commands
+- Start backend: `npm run server:dev`
+- Start frontend: `npm run dev`
+- Database GUI: `npm run prisma:studio`
+- Reset DB: `npm run prisma:reset`
+- Generate Prisma: `npm run prisma:generate`
+
