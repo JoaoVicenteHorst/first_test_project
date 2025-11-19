@@ -13,31 +13,50 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 // CORS Configuration
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Helper function to normalize URLs (remove trailing slashes)
+const normalizeUrl = (url) => url ? url.replace(/\/$/, '') : url;
+
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, Postman, or curl)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('✅ CORS: Allowing request with no origin (Postman/curl/app)');
+      return callback(null, true);
+    }
+    
+    // Normalize the incoming origin
+    const normalizedOrigin = normalizeUrl(origin);
     
     // In development, allow all localhost and 127.0.0.1 origins
     if (!isProduction) {
       if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        console.log(`✅ CORS: Allowing development origin: ${origin}`);
         return callback(null, true);
       }
     }
     
-    // Production: only allow specific origins
+    // Build allowed origins list
     const allowedOrigins = [
       'http://localhost:5173',           // Vite dev server (fallback)
       'http://localhost:5174',           // Alternative Vite port
       'http://localhost:3000',           // Alternative dev port
       process.env.FRONTEND_URL,          // Production frontend URL
       process.env.CORS_ORIGIN            // Additional custom origin
-    ].filter(Boolean); // Remove undefined values
+    ]
+    .filter(Boolean)                     // Remove undefined values
+    .map(normalizeUrl);                  // Normalize all URLs
     
-    if (allowedOrigins.includes(origin)) {
+    // Check if origin is allowed (with normalization)
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      console.log(`✅ CORS: Allowing origin: ${origin}`);
       callback(null, true);
     } else {
-      console.log(`❌ CORS blocked origin: ${origin}`);
+      console.log(`❌ CORS BLOCKED!`);
+      console.log(`   Origin: ${origin}`);
+      console.log(`   Allowed origins:`, allowedOrigins);
+      console.log(`   Environment: ${isProduction ? 'production' : 'development'}`);
+      console.log(`   FRONTEND_URL: ${process.env.FRONTEND_URL || 'NOT SET'}`);
+      console.log(`   CORS_ORIGIN: ${process.env.CORS_ORIGIN || 'NOT SET'}`);
       callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
@@ -52,13 +71,41 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // Log CORS configuration on startup
-console.log(`🔒 CORS Configuration:`);
-console.log(`   Environment: ${isProduction ? 'Production' : 'Development'}`);
+console.log('\n' + '='.repeat(60));
+console.log('🔒 CORS CONFIGURATION');
+console.log('='.repeat(60));
+console.log(`Environment: ${isProduction ? '🔴 PRODUCTION' : '🟢 DEVELOPMENT'}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV || 'undefined (defaults to development)'}`);
+console.log(`Port: ${PORT}`);
+console.log('\n📍 Allowed Origins:');
 if (!isProduction) {
-  console.log(`   ✅ Allowing all localhost origins`);
+  console.log('   ✅ All http://localhost:* origins');
+  console.log('   ✅ All http://127.0.0.1:* origins');
 } else {
-  console.log(`   ✅ Allowed origins:`, [process.env.FRONTEND_URL, process.env.CORS_ORIGIN].filter(Boolean));
+  const allowedList = [
+    'http://localhost:5173',
+    'http://localhost:5174', 
+    'http://localhost:3000',
+    process.env.FRONTEND_URL,
+    process.env.CORS_ORIGIN
+  ].filter(Boolean);
+  
+  if (allowedList.length === 3) {
+    console.log('   ⚠️  WARNING: No production origins configured!');
+    console.log('   ⚠️  Set FRONTEND_URL environment variable');
+  }
+  
+  allowedList.forEach(origin => {
+    if (origin === process.env.FRONTEND_URL) {
+      console.log(`   ✅ ${origin} (FRONTEND_URL)`);
+    } else if (origin === process.env.CORS_ORIGIN) {
+      console.log(`   ✅ ${origin} (CORS_ORIGIN)`);
+    } else {
+      console.log(`   ✅ ${origin} (development fallback)`);
+    }
+  });
 }
+console.log('='.repeat(60) + '\n');
 
 // Health check
 app.get('/api/health', (req, res) => {
