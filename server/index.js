@@ -11,30 +11,34 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // CORS Configuration
+const isProduction = process.env.NODE_ENV === 'production';
+
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, Postman, or curl)
     if (!origin) return callback(null, true);
     
+    // In development, allow all localhost and 127.0.0.1 origins
+    if (!isProduction) {
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
+    }
+    
+    // Production: only allow specific origins
     const allowedOrigins = [
-      'http://localhost:5173',           // Vite dev server
+      'http://localhost:5173',           // Vite dev server (fallback)
       'http://localhost:5174',           // Alternative Vite port
       'http://localhost:3000',           // Alternative dev port
       process.env.FRONTEND_URL,          // Production frontend URL
       process.env.CORS_ORIGIN            // Additional custom origin
     ].filter(Boolean); // Remove undefined values
     
-    // In development, allow all localhost origins
-    if (process.env.NODE_ENV !== 'production') {
-      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        return callback(null, true);
-      }
-    }
-    
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      console.log(`❌ CORS blocked origin: ${origin}`);
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   credentials: true,
@@ -46,6 +50,15 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Log CORS configuration on startup
+console.log(`🔒 CORS Configuration:`);
+console.log(`   Environment: ${isProduction ? 'Production' : 'Development'}`);
+if (!isProduction) {
+  console.log(`   ✅ Allowing all localhost origins`);
+} else {
+  console.log(`   ✅ Allowed origins:`, [process.env.FRONTEND_URL, process.env.CORS_ORIGIN].filter(Boolean));
+}
 
 // Health check
 app.get('/api/health', (req, res) => {

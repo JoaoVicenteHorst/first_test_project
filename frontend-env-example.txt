@@ -1,0 +1,16 @@
+# Frontend Environment Variables Example
+# Create a file named .env in your project root with this content
+
+# For Local Development:
+VITE_API_URL=http://localhost:5000/api
+
+# For Production (Render/Vercel/Netlify):
+# VITE_API_URL=https://your-backend-name.onrender.com/api
+
+# Instructions:
+# 1. Copy this file content
+# 2. Create a new file named .env in project root
+# 3. Paste the content
+# 4. Update the URL based on your environment
+# 5. Restart your dev server (npm run dev)
+
