@@ -56,13 +56,20 @@ Example: `https://my-backend.onrender.com/api`
 - [ ] Click "Save Changes"
 - [ ] Wait for backend to redeploy (1-2 min)
 
-### 4️⃣ Verify It Works
+### 4️⃣ Verify Database Seeding
 
-- [ ] Check backend logs for CORS configuration
+- [ ] Check backend logs for "🌱 Starting seed..."
+- [ ] Should see "✅ Seed completed successfully!"
+- [ ] Or "Database already has X user(s)" (if redeploying)
+
+### 5️⃣ Verify It Works
+
 - [ ] Visit frontend URL
-- [ ] Open browser DevTools (F12)
-- [ ] Try to register/login
+- [ ] Try logging in with test account:
+  - Email: `admin@example.com`
+  - Password: `admin123`
 - [ ] Should work! ✅
+- [ ] Open browser DevTools (F12) to check for errors
 
 ---
 

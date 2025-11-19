@@ -4,26 +4,17 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting seed...');
+  console.log('🌱 Starting FORCE seed (will delete existing data)...');
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-
-  // Check if users already exist
-  const existingUsers = await prisma.user.count();
   
-  if (existingUsers > 0) {
-    console.log(`ℹ️  Database already has ${existingUsers} user(s)`);
-    
-    // In production, don't delete existing data
-    if (process.env.NODE_ENV === 'production') {
-      console.log('⚠️  Production environment detected - skipping seed to preserve existing data');
-      console.log('💡 To force seed in production, run: npm run prisma:seed:force');
-      return;
-    }
-    
-    // In development, ask if we should clear
-    console.log('🗑️  Clearing existing users (development mode)...');
-    await prisma.user.deleteMany();
+  if (process.env.NODE_ENV === 'production') {
+    console.log('⚠️  WARNING: Force seeding in production!');
+    console.log('⚠️  This will DELETE ALL existing users!');
   }
+
+  // Clear existing data
+  const deletedCount = await prisma.user.deleteMany();
+  console.log(`🗑️  Deleted ${deletedCount.count} existing user(s)`);
 
   // Hash password for initial users (password: "admin123")
   const hashedPassword = await bcrypt.hash('admin123', 10);
@@ -61,7 +52,7 @@ async function main() {
     }
   });
 
-  console.log('\n✅ Seed completed successfully!');
+  console.log('\n✅ Force seed completed successfully!');
   console.log('=====================================');
   console.log('📋 Created users (all with password: "admin123"):');
   console.log(`  👑 Admin:   ${admin.email}`);
@@ -73,7 +64,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seeding:', e);
+    console.error('❌ Error during force seeding:', e);
     process.exit(1);
   })
   .finally(async () => {
